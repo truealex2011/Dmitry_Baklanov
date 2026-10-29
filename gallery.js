@@ -58,8 +58,11 @@
       const card = button('', 'Открыть фото ' + (i + 1) + ': ' + cleanTitle(it), grid, () => gOpenLightbox(i));
       card.className = 'g-sheet-card';
       const img = document.createElement('img'); img.src = getPhotoSrc(it); img.alt = cleanTitle(it);
-      img.loading = i < 8 ? 'eager' : 'lazy'; img.decoding = 'async';
-      img.onerror = () => { img.alt = 'Снимок недоступен'; };
+      img.loading = i < 16 ? 'eager' : 'lazy'; img.decoding = 'async';
+      if (i < 16) { try { img.fetchPriority = i < 8 ? 'high' : 'auto'; } catch (e) {} }
+      img.onerror = () => { card.classList.add('loaded'); img.alt = 'Снимок недоступен'; };
+      img.onload = () => card.classList.add('loaded');
+      if (img.complete && img.naturalWidth) card.classList.add('loaded');
       const caption = document.createElement('span'); caption.textContent = cleanTitle(it);
       const number = document.createElement('small'); number.textContent = String(i + 1).padStart(3, '0');
       caption.append(number); card.append(img, caption);
