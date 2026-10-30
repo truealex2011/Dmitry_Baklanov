@@ -57,10 +57,14 @@
     gPhotos.forEach((it, i) => {
       const card = button('', 'Открыть фото ' + (i + 1) + ': ' + cleanTitle(it), grid, () => gOpenLightbox(i));
       card.className = 'g-sheet-card';
-      const img = document.createElement('img'); img.src = getPhotoSrc(it); img.alt = cleanTitle(it);
+      const img = document.createElement('img'); img.src = getPrevSrc(it); img.alt = cleanTitle(it);
       img.loading = i < 16 ? 'eager' : 'lazy'; img.decoding = 'async';
       if (i < 16) { try { img.fetchPriority = i < 8 ? 'high' : 'auto'; } catch (e) {} }
-      img.onerror = () => { card.classList.add('loaded'); img.alt = 'Снимок недоступен'; };
+      let retried = false;
+      img.onerror = () => {
+        if (!retried) { retried = true; img.src = getPhotoSrc(it); return; }
+        card.classList.add('loaded'); img.alt = 'Снимок недоступен';
+      };
       img.onload = () => card.classList.add('loaded');
       if (img.complete && img.naturalWidth) card.classList.add('loaded');
       const caption = document.createElement('span'); caption.textContent = cleanTitle(it);
@@ -121,7 +125,7 @@
       filmItems = gPhotos; film.replaceChildren();
       gPhotos.forEach((it, i) => {
         const thumb = button('', 'Кадр ' + (i + 1), film, () => gOpenLightbox(i));
-        const img = document.createElement('img'); img.src = getPhotoSrc(it); img.alt = ''; img.loading = 'lazy'; thumb.append(img);
+        const img = document.createElement('img'); img.src = getPrevSrc(it); img.dataset.full = getPhotoSrc(it); img.alt = ''; img.loading = 'lazy'; thumb.append(img);
       });
     }
     [...film.children].forEach((el, i) => { el.classList.toggle('active', i === idx); el.setAttribute('aria-pressed', i === idx); });
